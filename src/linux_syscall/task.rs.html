@@ -1,4 +1,10 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `linux-syscall&#x2F;src&#x2F;task.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>task.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../linux_syscall/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input"name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `linux-syscall/src/task.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>task.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../linux_syscall/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../../linux_syscall/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../linux_syscall/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><div>
+                                <input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -430,53 +436,133 @@
 <span id="430">430</span>
 <span id="431">431</span>
 <span id="432">432</span>
-</pre><pre class="rust">
-<span class="doccomment">//! Syscalls for process</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - fork</span>
-<span class="doccomment">//! - vfork</span>
-<span class="doccomment">//! - clone</span>
-<span class="doccomment">//! - wait4</span>
-<span class="doccomment">//! - execve</span>
-<span class="doccomment">//! - gettid</span>
-<span class="doccomment">//! - getpid</span>
-<span class="doccomment">//! - getppid</span>
-
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">core::fmt::Debug</span>;
-<span class="kw">use</span> <span class="ident">linux_object::fs::INodeExt</span>;
-<span class="kw">use</span> <span class="ident">linux_object::loader::LinuxElfLoader</span>;
-<span class="kw">use</span> <span class="ident">linux_object::thread</span>::{<span class="ident">CurrentThreadExt</span>, <span class="ident">ThreadExt</span>};
-<span class="kw">use</span> <span class="ident">linux_object::time</span>::<span class="kw-2">*</span>;
 
+<span class="kw">use</span> <span class="ident">alloc::string::ToString</span>;
+<span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
+
+<span class="kw">use</span> <span class="ident">kernel_hal::context::UserContextField</span>;
+<span class="kw">use</span> <span class="ident">linux_object::thread</span>::{<span class="ident">CurrentThreadExt</span>, <span class="ident">ThreadExt</span>};
+<span class="comment">// use linux_object::time::TimeSpec;</span>
+<span class="kw">use</span> <span class="ident">linux_object</span>::{<span class="ident">fs::INodeExt</span>, <span class="ident">loader::LinuxElfLoader</span>};
+
+<span class="doccomment">/// Syscalls for process.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Menu</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// - [`fork`](Self::sys_fork)</span>
+<span class="doccomment">/// - [`vfork`](Self::sys_vfork)</span>
+<span class="doccomment">/// - [`clone`](Self::sys_clone)</span>
+<span class="doccomment">/// - [`wait4`](Self::sys_wait4)</span>
+<span class="doccomment">/// - [`execve`](Self::sys_execve)</span>
+<span class="doccomment">/// - [`gettid`](Self::sys_gettid)</span>
+<span class="doccomment">/// - [`getpid`](Self::sys_getpid)</span>
+<span class="doccomment">/// - [`getppid`](Self::sys_getppid)</span>
+<span class="doccomment">/// - [`exit`](Self::sys_exit)</span>
+<span class="doccomment">/// - [`exit_group`](Self::sys_exit_group)</span>
+<span class="doccomment">/// - [`nanosleep`](Self::sys_nanosleep)</span>
+<span class="doccomment">/// - [`set_tid_address`](Self::sys_set_tid_address)</span>
 <span class="kw">impl</span> <span class="ident">Syscall</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Fork the current process. Return the child&#39;s PID.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_fork</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    <span class="doccomment">/// `fork` creates a new process by duplicating the calling process</span>
+    <span class="doccomment">/// (see [linux man fork(2)](https://www.man7.org/linux/man-pages/man2/fork.2.html)).</span>
+    <span class="doccomment">/// The new process is referred to as the child process.</span>
+    <span class="doccomment">/// The calling process is referred to as the parent process.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The child process and the parent process run in separate memory spaces.</span>
+    <span class="doccomment">/// At the time of `fork` both memory spaces have the same content.</span>
+    <span class="doccomment">/// Memory writes, file mappings ([`Self::sys_mmap`]) and unmappings ([`Self::sys_munmap`])</span>
+    <span class="doccomment">/// performed by one of the processes do not affect the other.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The child process is an exact duplicate of the parent process except for the following points:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - The child has its own unique process ID, and this PID does not match the ID of any existing process.</span>
+    <span class="doccomment">/// - The child&#39;s parent process ID is the same as the parent&#39;s process ID.</span>
+    <span class="doccomment">/// - Process resource utilizations ([`Self::sys_getrusage`]) and CPU time counters ([`Self::sys_times`]) are reset to zero in the child.</span>
+    <span class="doccomment">/// - The child does not inherit semaphore adjustments from its parent ([`Self::sys_semop`]).</span>
+    <span class="doccomment">/// - The child does not inherit process-associated record locks from its parent ([`Self::sys_fcntl`]).</span>
+    <span class="doccomment">///   (On the other hand, it does inherit [`Self::sys_fcntl`] open file description locks and [`Self::sys_flock`] locks from its parent.)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Note the following further points:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - The child process is created with a single thread—the one that called fork().</span>
+    <span class="doccomment">///   The entire virtual address space of the parent is replicated in the child,</span>
+    <span class="doccomment">///   including the states of mutexes and condition variables.</span>
+    <span class="doccomment">/// - After a `fork` in a multithreaded program,</span>
+    <span class="doccomment">///   the child can safely call only async-signal-safe functions</span>
+    <span class="doccomment">///   until such time as it calls [`Self::sys_execve`].</span>
+    <span class="doccomment">/// - The child inherits copies of the parent&#39;s set of open file descriptors.</span>
+    <span class="doccomment">///   Each file descriptor in the child refers to the same open file description (see [`Self::sys_open`])</span>
+    <span class="doccomment">///   as the corresponding file descriptor in the parent.</span>
+    <span class="doccomment">///   This means that the two file descriptors share open file status flags and file offset.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_fork</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">SysResult</span> {
         <span class="macro">info!</span>(<span class="string">&quot;fork:&quot;</span>);
         <span class="kw">let</span> <span class="ident">new_proc</span> <span class="op">=</span> <span class="ident">Process::fork_from</span>(<span class="self">self</span>.<span class="ident">zircon_process</span>(), <span class="bool-val">false</span>)<span class="question-mark">?</span>; <span class="comment">// old pt NULL here</span>
         <span class="kw">let</span> <span class="ident">new_thread</span> <span class="op">=</span> <span class="ident">Thread::create_linux</span>(<span class="kw-2">&amp;</span><span class="ident">new_proc</span>)<span class="question-mark">?</span>;
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>))]</span>
-        <span class="ident">new_thread</span>.<span class="ident">start_with_regs</span>(<span class="ident">GeneralRegs::new_fork</span>(<span class="self">self</span>.<span class="ident">regs</span>), <span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>)]</span>
-        <span class="ident">new_thread</span>.<span class="ident">start_with_context</span>(<span class="self">self</span>.<span class="ident">context</span>, <span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_ctx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">context_cloned</span>()<span class="question-mark">?</span>;
+        <span class="ident">new_ctx</span>.<span class="ident">set_field</span>(<span class="ident">UserContextField::ReturnValue</span>, <span class="number">0</span>);
+        <span class="ident">new_thread</span>.<span class="ident">with_context</span>(<span class="op">|</span><span class="ident">ctx</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">ctx</span> <span class="op">=</span> <span class="ident">new_ctx</span>)<span class="question-mark">?</span>;
+        <span class="ident">new_thread</span>.<span class="ident">start</span>(<span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
 
         <span class="macro">info!</span>(<span class="string">&quot;fork: {} -&gt; {}&quot;</span>, <span class="self">self</span>.<span class="ident">zircon_process</span>().<span class="ident">id</span>(), <span class="ident">new_proc</span>.<span class="ident">id</span>());
         <span class="prelude-val">Ok</span>(<span class="ident">new_proc</span>.<span class="ident">id</span>() <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
-    <span class="doccomment">/// creates a child process of the calling process, similar to fork but wait for execve</span>
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">sys_vfork</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    <span class="doccomment">/// `sys_vfork`, just like [`Self::sys_fork`], creates a child process of the calling process</span>
+    <span class="doccomment">/// (see [linux man vfork(2)](https://www.man7.org/linux/man-pages/man2/vfork.2.html)).</span>
+    <span class="doccomment">/// For details, see [`Self::sys_fork`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `sys_vfork` differs from [`Self::sys_fork`] in that the calling thread is suspended until the child terminates</span>
+    <span class="doccomment">/// (either normally, by calling [`Self::sys_exit`], or abnormally, after delivery of a fatal signal),</span>
+    <span class="doccomment">/// or it makes a call to [`Self::sys_execve`].</span>
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">sys_vfork</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">SysResult</span> {
         <span class="macro">info!</span>(<span class="string">&quot;vfork:&quot;</span>);
         <span class="kw">let</span> <span class="ident">new_proc</span> <span class="op">=</span> <span class="ident">Process::fork_from</span>(<span class="self">self</span>.<span class="ident">zircon_process</span>(), <span class="bool-val">true</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">new_thread</span> <span class="op">=</span> <span class="ident">Thread::create_linux</span>(<span class="kw-2">&amp;</span><span class="ident">new_proc</span>)<span class="question-mark">?</span>;
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>))]</span>
-        <span class="ident">new_thread</span>.<span class="ident">start_with_regs</span>(<span class="ident">GeneralRegs::new_fork</span>(<span class="self">self</span>.<span class="ident">regs</span>), <span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>)]</span>
-        <span class="ident">new_thread</span>.<span class="ident">start_with_context</span>(<span class="self">self</span>.<span class="ident">context</span>, <span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_ctx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">context_cloned</span>()<span class="question-mark">?</span>;
+        <span class="ident">new_ctx</span>.<span class="ident">set_field</span>(<span class="ident">UserContextField::ReturnValue</span>, <span class="number">0</span>);
+        <span class="ident">new_thread</span>.<span class="ident">with_context</span>(<span class="op">|</span><span class="ident">ctx</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">ctx</span> <span class="op">=</span> <span class="ident">new_ctx</span>)<span class="question-mark">?</span>;
+        <span class="ident">new_thread</span>.<span class="ident">start</span>(<span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">new_proc</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">KernelObject</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">new_proc</span>;
         <span class="macro">info!</span>(
@@ -488,11 +574,14 @@
         <span class="prelude-val">Ok</span>(<span class="ident">new_proc</span>.<span class="ident">id</span>() <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
-    <span class="doccomment">/// Create a new thread in the current process.</span>
+    <span class="doccomment">/// `sys_clone` create a new thread in the current process.</span>
     <span class="doccomment">/// The new thread&#39;s stack pointer will be set to `newsp`,</span>
     <span class="doccomment">/// and thread pointer will be set to `newtls`.</span>
-    <span class="doccomment">/// The child tid will be stored at both `parent_tid` and `child_tid`.</span>
-    <span class="doccomment">/// This is partially implemented for musl only.</span>
+    <span class="doccomment">/// The child TID will be stored at both `parent_tid` and `child_tid`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// &gt; **NOTE!** This system call is not exactly the same as `clone` in Linux.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// &gt; **NOTE!** This is partially implemented for `musl` only.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_clone</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">flags</span>: <span class="ident">usize</span>,
@@ -500,13 +589,13 @@
         <span class="kw-2">mut</span> <span class="ident">parent_tid</span>: <span class="ident">UserOutPtr</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>,
         <span class="kw-2">mut</span> <span class="ident">child_tid</span>: <span class="ident">UserOutPtr</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>,
         <span class="ident">newtls</span>: <span class="ident">usize</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    ) -&gt; <span class="ident">SysResult</span> {
         <span class="kw">let</span> <span class="ident">_flags</span> <span class="op">=</span> <span class="ident">CloneFlags::from_bits_truncate</span>(<span class="ident">flags</span>);
         <span class="macro">info!</span>(
             <span class="string">&quot;clone: flags={:#x}, newsp={:#x}, parent_tid={:?}, child_tid={:?}, newtls={:#x}&quot;</span>,
             <span class="ident">flags</span>, <span class="ident">newsp</span>, <span class="ident">parent_tid</span>, <span class="ident">child_tid</span>, <span class="ident">newtls</span>
         );
-        <span class="kw">if</span> <span class="ident">flags</span> <span class="op">=</span><span class="op">=</span> <span class="number">0x4111</span> <span class="op">|</span><span class="op">|</span> <span class="ident">flags</span> <span class="op">=</span><span class="op">=</span> <span class="number">0x11</span> {
+        <span class="kw">if</span> <span class="ident">flags</span> <span class="op">==</span> <span class="number">0x4111</span> <span class="op">|</span><span class="op">|</span> <span class="ident">flags</span> <span class="op">==</span> <span class="number">0x11</span> {
             <span class="macro">warn!</span>(<span class="string">&quot;sys_clone is calling sys_fork instead, ignoring other args&quot;</span>);
             <span class="comment">//unimplemented!()</span>
             <span class="kw">return</span> <span class="self">self</span>.<span class="ident">sys_fork</span>();
@@ -518,14 +607,12 @@
             <span class="macro">panic!</span>(<span class="string">&quot;unsupported sys_clone flags: {:#x}&quot;</span>, <span class="ident">flags</span>);
         }
         <span class="kw">let</span> <span class="ident">new_thread</span> <span class="op">=</span> <span class="ident">Thread::create_linux</span>(<span class="self">self</span>.<span class="ident">zircon_process</span>())<span class="question-mark">?</span>;
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>))]</span>
-        {
-            <span class="kw">let</span> <span class="ident">regs</span> <span class="op">=</span> <span class="ident">GeneralRegs::new_clone</span>(<span class="self">self</span>.<span class="ident">regs</span>, <span class="ident">newsp</span>, <span class="ident">newtls</span>);
-            <span class="ident">new_thread</span>.<span class="ident">start_with_regs</span>(<span class="ident">regs</span>, <span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
-        }
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>)]</span>
-        <span class="ident">new_thread</span>.<span class="ident">start_with_context</span>(<span class="self">self</span>.<span class="ident">context</span>, <span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_ctx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">context_cloned</span>()<span class="question-mark">?</span>;
+        <span class="ident">new_ctx</span>.<span class="ident">set_field</span>(<span class="ident">UserContextField::StackPointer</span>, <span class="ident">newsp</span>);
+        <span class="ident">new_ctx</span>.<span class="ident">set_field</span>(<span class="ident">UserContextField::ThreadPointer</span>, <span class="ident">newtls</span>);
+        <span class="ident">new_ctx</span>.<span class="ident">set_field</span>(<span class="ident">UserContextField::ReturnValue</span>, <span class="number">0</span>);
+        <span class="ident">new_thread</span>.<span class="ident">with_context</span>(<span class="op">|</span><span class="ident">ctx</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">ctx</span> <span class="op">=</span> <span class="ident">new_ctx</span>)<span class="question-mark">?</span>;
+        <span class="ident">new_thread</span>.<span class="ident">start</span>(<span class="self">self</span>.<span class="ident">thread_fn</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">tid</span> <span class="op">=</span> <span class="ident">new_thread</span>.<span class="ident">id</span>();
         <span class="macro">info!</span>(<span class="string">&quot;clone: {} -&gt; {}&quot;</span>, <span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">id</span>(), <span class="ident">tid</span>);
@@ -535,15 +622,51 @@
         <span class="prelude-val">Ok</span>(<span class="ident">tid</span> <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
-    <span class="doccomment">/// Wait for a child process exited.</span>
+    <span class="doccomment">/// `sys_wait4` suspends execution of the calling thread</span>
+    <span class="doccomment">/// until a child specified by `pid` argument has changed state</span>
+    <span class="doccomment">/// (see [linux man wait4(2)](https://www.man7.org/linux/man-pages/man2/wait4.2.html)).</span>
+    <span class="doccomment">/// By default, `sys_wait4` waits only for terminated children,</span>
+    <span class="doccomment">/// but this behavior is modifiable via the options argument, as described below.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Return the PID. Store exit code to `wstatus` if it&#39;s not null.</span>
+    <span class="doccomment">/// The value of `pid` can be:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - **-1**: meaning wait for any child process.</span>
+    <span class="doccomment">/// - **0**: meaning wait for any child process whose process group ID is equal to</span>
+    <span class="doccomment">///          that of the calling process at the time of the call to `sys_wait4`.</span>
+    <span class="doccomment">/// - **&gt;0**: meaning wait for the child whose process ID is equal to the value of `pid`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The value of options is an OR of zero or more of the following constants:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - **NOHANG**    = 0x000_0001;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   TODO</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - **STOPPED**   = 0x000_0002;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   TODO</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - **EXITED**    = 0x000_0004;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   TODO</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - **CONTINUED** = 0x000_0008;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   TODO</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - **NOWAIT**    = 0x100_0000;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   TODO</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// On success, returns the process ID of the child whose state has changed;</span>
+    <span class="doccomment">/// if `NOHANG` flag was specified and one or more child(ren) specified by pid exist,</span>
+    <span class="doccomment">/// but have not yet changed state, then 0 is returned.</span>
+    <span class="doccomment">/// On failure, -1 is returned.</span>
     <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">sys_wait4</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">pid</span>: <span class="ident">i32</span>,
         <span class="kw-2">mut</span> <span class="ident">wstatus</span>: <span class="ident">UserOutPtr</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>,
         <span class="ident">options</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    ) -&gt; <span class="ident">SysResult</span> {
         <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
         <span class="kw">enum</span> <span class="ident">WaitTarget</span> {
             <span class="ident">AnyChild</span>,
@@ -560,10 +683,10 @@
             }
         }
         <span class="kw">let</span> <span class="ident">target</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">pid</span> {
-            <span class="op">-</span><span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">WaitTarget::AnyChild</span>,
-            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">WaitTarget::AnyChildInGroup</span>,
-            <span class="ident">p</span> <span class="kw">if</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">WaitTarget::Pid</span>(<span class="ident">p</span> <span class="kw">as</span> <span class="ident">KoID</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented!</span>(),
+            <span class="op">-</span><span class="number">1</span> =&gt; <span class="ident">WaitTarget::AnyChild</span>,
+            <span class="number">0</span> =&gt; <span class="ident">WaitTarget::AnyChildInGroup</span>,
+            <span class="ident">p</span> <span class="kw">if</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">0</span> =&gt; <span class="ident">WaitTarget::Pid</span>(<span class="ident">p</span> <span class="kw">as</span> <span class="ident">KoID</span>),
+            <span class="kw">_</span> =&gt; <span class="macro">unimplemented!</span>(),
         };
         <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">WaitFlags::from_bits_truncate</span>(<span class="ident">options</span>);
         <span class="kw">let</span> <span class="ident">nohang</span> <span class="op">=</span> <span class="ident">flags</span>.<span class="ident">contains</span>(<span class="ident">WaitFlags::NOHANG</span>);
@@ -572,34 +695,43 @@
             <span class="ident">target</span>, <span class="ident">wstatus</span>, <span class="ident">flags</span>,
         );
         <span class="kw">let</span> (<span class="ident">pid</span>, <span class="ident">code</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">target</span> {
-            <span class="ident">WaitTarget::AnyChild</span> <span class="op">|</span> <span class="ident">WaitTarget::AnyChildInGroup</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">WaitTarget::AnyChild</span> <span class="op">|</span> <span class="ident">WaitTarget::AnyChildInGroup</span> =&gt; {
                 <span class="ident">wait_child_any</span>(<span class="self">self</span>.<span class="ident">zircon_process</span>(), <span class="ident">nohang</span>).<span class="kw">await</span><span class="question-mark">?</span>
             }
-            <span class="ident">WaitTarget::Pid</span>(<span class="ident">pid</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">pid</span>, <span class="ident">wait_child</span>(<span class="self">self</span>.<span class="ident">zircon_process</span>(), <span class="ident">pid</span>, <span class="ident">nohang</span>).<span class="kw">await</span><span class="question-mark">?</span>),
+            <span class="ident">WaitTarget::Pid</span>(<span class="ident">pid</span>) =&gt; (<span class="ident">pid</span>, <span class="ident">wait_child</span>(<span class="self">self</span>.<span class="ident">zircon_process</span>(), <span class="ident">pid</span>, <span class="ident">nohang</span>).<span class="kw">await</span><span class="question-mark">?</span>),
         };
         <span class="ident">wstatus</span>.<span class="ident">write_if_not_null</span>(<span class="ident">code</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">pid</span> <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
-    <span class="doccomment">/// Replaces the current ** process ** with a new process image</span>
+    <span class="doccomment">/// `sys_execve` executes the program referred to by `path`</span>
+    <span class="doccomment">/// (see [linux man execve(2)](https://www.man7.org/linux/man-pages/man2/execve.2.html)).</span>
+    <span class="doccomment">/// This causes the program that is currently being run</span>
+    <span class="doccomment">/// by the calling process to be replaced with a new program,</span>
+    <span class="doccomment">/// with newly initialized stack, heap, and (initialized and uninitialized) data segments.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `path` argument must be a binary executable file.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// `argv` is an array of argument strings passed to the new program.</span>
+    <span class="doccomment">/// By convention, the first of these strings (i.e., `argv[0]`)</span>
+    <span class="doccomment">/// should contain the filename associated with the file being executed.</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// `envp` is an array of strings, conventionally of the form `key=value`,</span>
     <span class="doccomment">/// which are passed as environment to the new program.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// NOTICE: `argv` &amp; `envp` can not be NULL (different from Linux)</span>
+    <span class="doccomment">/// &gt; **NOTE!** Differ from linux, `argv` &amp; `envp` can not be NULL.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// NOTICE: for multi-thread programs</span>
-    <span class="doccomment">/// A call to any exec function from a process with more than one thread</span>
-    <span class="doccomment">/// shall result in all threads being terminated and the new executable image</span>
-    <span class="doccomment">/// being loaded and executed.</span>
+    <span class="doccomment">/// &gt; **NOTE!** For multi-thread programs,</span>
+    <span class="doccomment">///             A call to any exec function from a process with more than one thread</span>
+    <span class="doccomment">///             shall result in all threads being terminated and the new executable image</span>
+    <span class="doccomment">///             being loaded and executed.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_execve</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
         <span class="ident">path</span>: <span class="ident">UserInPtr</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
         <span class="ident">argv</span>: <span class="ident">UserInPtr</span><span class="op">&lt;</span><span class="ident">UserInPtr</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">envp</span>: <span class="ident">UserInPtr</span><span class="op">&lt;</span><span class="ident">UserInPtr</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">read_cstring</span>()<span class="question-mark">?</span>;
+    ) -&gt; <span class="ident">SysResult</span> {
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">as_c_str</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">argv</span>.<span class="ident">read_cstring_array</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">envs</span> <span class="op">=</span> <span class="ident">envp</span>.<span class="ident">read_cstring_array</span>()<span class="question-mark">?</span>;
         <span class="macro">info!</span>(
@@ -615,50 +747,36 @@
 
         <span class="comment">// Read program file</span>
         <span class="kw">let</span> <span class="ident">proc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">linux_process</span>();
-        <span class="kw">let</span> <span class="ident">inode</span> <span class="op">=</span> <span class="ident">proc</span>.<span class="ident">lookup_inode</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">inode</span> <span class="op">=</span> <span class="ident">proc</span>.<span class="ident">lookup_inode</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">inode</span>.<span class="ident">read_as_vec</span>()<span class="question-mark">?</span>;
 
         <span class="ident">proc</span>.<span class="ident">remove_cloexec_files</span>();
 
+        <span class="comment">// 注意！即将销毁旧应用程序的用户空间，现在将必要的信息拷贝到内核！</span>
+        <span class="comment">// Notice! About to destroy the user space of the old application, now copy the necessary information into kernel!</span>
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">vmar</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zircon_process</span>().<span class="ident">vmar</span>();
         <span class="ident">vmar</span>.<span class="ident">clear</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">loader</span> <span class="op">=</span> <span class="ident">LinuxElfLoader</span> {
-            <span class="ident">syscall_entry</span>: <span class="self">self</span>.<span class="ident">syscall_entry</span>,
-            <span class="ident">stack_pages</span>: <span class="number">8</span>,
-            <span class="ident">root_inode</span>: <span class="ident">proc</span>.<span class="ident">root_inode</span>().<span class="ident">clone</span>(),
-        };
-        <span class="kw">let</span> (<span class="ident">entry</span>, <span class="ident">sp</span>) <span class="op">=</span> <span class="ident">loader</span>.<span class="ident">load</span>(<span class="kw-2">&amp;</span><span class="ident">vmar</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="ident">args</span>, <span class="ident">envs</span>, <span class="ident">path</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>;
-
-        <span class="comment">// Activate page table</span>
-        <span class="comment">// vmar.activate();</span>
 
         <span class="comment">// Modify exec path</span>
         <span class="ident">proc</span>.<span class="ident">set_execute_path</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>);
 
+        <span class="kw">let</span> (<span class="ident">entry</span>, <span class="ident">sp</span>) <span class="op">=</span> <span class="ident">LinuxElfLoader</span> {
+            <span class="ident">syscall_entry</span>: <span class="self">self</span>.<span class="ident">syscall_entry</span>,
+            <span class="ident">stack_pages</span>: <span class="number">8</span>,
+            <span class="ident">root_inode</span>: <span class="ident">proc</span>.<span class="ident">root_inode</span>().<span class="ident">clone</span>(),
+        }
+        .<span class="ident">load</span>(<span class="kw-2">&amp;</span><span class="ident">vmar</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="ident">args</span>, <span class="ident">envs</span>, <span class="ident">path</span>)<span class="question-mark">?</span>;
+
         <span class="comment">// TODO: use right signal</span>
-        <span class="comment">//self.zircon_process().signal_set(Signal::SIGNALED);</span>
-        <span class="comment">//Workaround, the child process could NOT exit correctly</span>
+        <span class="comment">// self.zircon_process().signal_set(Signal::SIGNALED);</span>
+        <span class="comment">// Workaround, the child process could NOT exit correctly</span>
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>))]</span>
-        {
-            <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">regs</span> <span class="op">=</span> <span class="ident">GeneralRegs::new_fn</span>(<span class="ident">entry</span>, <span class="ident">sp</span>, <span class="number">0</span>, <span class="number">0</span>);
-        }
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>)]</span>
-        {
-            <span class="self">self</span>.<span class="ident">context</span>.<span class="ident">general</span> <span class="op">=</span> <span class="ident">GeneralRegs::new_fn</span>(<span class="ident">entry</span>, <span class="ident">sp</span>, <span class="number">0</span>, <span class="number">0</span>);
-            <span class="self">self</span>.<span class="ident">context</span>.<span class="ident">sepc</span> <span class="op">=</span> <span class="ident">entry</span>;
-            <span class="macro">info!</span>(
-                <span class="string">&quot;execve: PageTable: {:#x}, entry: {:#x}, sp: {:#x}&quot;</span>,
-                <span class="self">self</span>.<span class="ident">zircon_process</span>().<span class="ident">vmar</span>().<span class="ident">table_phys</span>(),
-                <span class="self">self</span>.<span class="ident">context</span>.<span class="ident">sepc</span>,
-                <span class="self">self</span>.<span class="ident">context</span>.<span class="ident">general</span>.<span class="ident">sp</span>
-            );
-        }
-
+        <span class="self">self</span>.<span class="ident">thread</span>
+            .<span class="ident">with_context</span>(<span class="op">|</span><span class="ident">ctx</span><span class="op">|</span> <span class="ident">ctx</span>.<span class="ident">setup_uspace</span>(<span class="ident">entry</span>, <span class="ident">sp</span>, <span class="number">0</span>, <span class="number">0</span>))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="number">0</span>)
     }
-    <span class="comment">//</span>
+
     <span class="comment">//    pub fn sys_yield(&amp;self) -&gt; SysResult {</span>
     <span class="comment">//        thread::yield_now();</span>
     <span class="comment">//        Ok(0)</span>
@@ -687,38 +805,54 @@
     <span class="comment">//        }</span>
     <span class="comment">//    }</span>
 
-    <span class="doccomment">/// Get the current thread ID.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_gettid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    <span class="doccomment">/// `sys_gettid` returns the caller&#39;s thread ID (TID)</span>
+    <span class="doccomment">/// (see [linux man gettid(2)](https://www.man7.org/linux/man-pages/man2/gettid.2.html)).</span>
+    <span class="doccomment">/// In a single-threaded process, the thread ID is equal to the process ID (PID, as returned by [`Self::sys_getpid`]).</span>
+    <span class="doccomment">/// In a multithreaded process, all threads have the same PID, but each one has a unique TID.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_gettid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">SysResult</span> {
         <span class="macro">info!</span>(<span class="string">&quot;gettid:&quot;</span>);
         <span class="kw">let</span> <span class="ident">tid</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">id</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">tid</span> <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
-    <span class="doccomment">/// Get the current process ID.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_getpid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    <span class="doccomment">/// `sys_getpid` returns the process ID (PID) of the calling process</span>
+    <span class="doccomment">/// (see [linux man getpid(2)](https://www.man7.org/linux/man-pages/man2/getpid.2.html)).</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_getpid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">SysResult</span> {
         <span class="macro">info!</span>(<span class="string">&quot;getpid:&quot;</span>);
         <span class="kw">let</span> <span class="ident">proc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zircon_process</span>();
         <span class="kw">let</span> <span class="ident">pid</span> <span class="op">=</span> <span class="ident">proc</span>.<span class="ident">id</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">pid</span> <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
-    <span class="doccomment">/// Get the parent process ID.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_getppid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    <span class="doccomment">/// `sys_getppid` returns the process ID of the parent of the calling process</span>
+    <span class="doccomment">/// (see [linux man getppid(2)](https://www.man7.org/linux/man-pages/man2/getpid.2.html)).</span>
+    <span class="doccomment">/// This will be either the ID of the process that created this process using fork(),</span>
+    <span class="doccomment">/// or, if that process has already terminated, 0.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_getppid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">SysResult</span> {
         <span class="macro">info!</span>(<span class="string">&quot;getppid:&quot;</span>);
         <span class="kw">let</span> <span class="ident">proc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">linux_process</span>();
         <span class="kw">let</span> <span class="ident">ppid</span> <span class="op">=</span> <span class="ident">proc</span>.<span class="ident">parent</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">id</span>()).<span class="ident">unwrap_or</span>(<span class="number">0</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">ppid</span> <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
-    <span class="doccomment">/// Exit the current thread</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_exit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">exit_code</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    <span class="doccomment">/// `sys_exit` system call terminates only the calling thread</span>
+    <span class="doccomment">/// (see [linux man _exit(2)](https://www.man7.org/linux/man-pages/man2/exit.2.html),</span>
+    <span class="doccomment">/// this syscall is same as a raw `_exit` in glibc),</span>
+    <span class="doccomment">/// and actions such as reparenting child processes or sending</span>
+    <span class="doccomment">/// SIGCHLD to the parent process are performed only if this is the</span>
+    <span class="doccomment">/// last thread in the thread group.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_exit</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">exit_code</span>: <span class="ident">i32</span>) -&gt; <span class="ident">SysResult</span> {
         <span class="macro">info!</span>(<span class="string">&quot;exit: code={}&quot;</span>, <span class="ident">exit_code</span>);
         <span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">exit_linux</span>(<span class="ident">exit_code</span>);
         <span class="prelude-val">Err</span>(<span class="ident">LxError::ENOSYS</span>)
     }
 
-    <span class="doccomment">/// Exit the current thread group (i.e. process)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_exit_group</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">exit_code</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    <span class="doccomment">/// `sys_exit_group` is equivalent to [`Self::sys_exit`]</span>
+    <span class="doccomment">/// except that it terminates not only the calling thread</span>
+    <span class="doccomment">/// (see [linux man exit_group(2)](https://www.man7.org/linux/man-pages/man2/exit_group.2.html),</span>
+    <span class="doccomment">/// but all threads in the calling process&#39;s thread group.</span>
+    <span class="doccomment">/// As a result, the entire calling process will exit.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_exit_group</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">exit_code</span>: <span class="ident">i32</span>) -&gt; <span class="ident">SysResult</span> {
         <span class="macro">info!</span>(<span class="string">&quot;exit_group: code={}&quot;</span>, <span class="ident">exit_code</span>);
         <span class="kw">let</span> <span class="ident">proc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">zircon_process</span>();
         <span class="ident">proc</span>.<span class="ident">exit</span>(<span class="ident">exit_code</span> <span class="kw">as</span> <span class="ident">i64</span>);
@@ -727,22 +861,34 @@
 
     <span class="doccomment">/// Allows the calling thread to sleep for</span>
     <span class="doccomment">/// an interval specified with nanosecond precision</span>
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">sys_nanosleep</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">req</span>: <span class="ident">UserInPtr</span><span class="op">&lt;</span><span class="ident">TimeSpec</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
-        <span class="macro">info!</span>(<span class="string">&quot;nanosleep: deadline={:?}&quot;</span>, <span class="ident">req</span>);
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">read</span>()<span class="question-mark">?</span>;
-        <span class="ident">kernel_hal::future::sleep_until</span>(<span class="ident">req</span>.<span class="ident">into</span>()).<span class="kw">await</span>;
-        <span class="prelude-val">Ok</span>(<span class="number">0</span>)
-    }
+    <span class="doccomment">/// (see [linux man nanosleep(2)](https://www.man7.org/linux/man-pages/man2/nanosleep.2.html).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `nanosleep` suspends the execution of the calling thread</span>
+    <span class="doccomment">/// until either at least the time specified in `req` has elapsed,</span>
+    <span class="doccomment">/// or the delivery of a signal that triggers the invocation of a handler</span>
+    <span class="doccomment">/// in the calling thread or that terminates the process.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// To represent a duration, see TimeSpec.</span>
 
+    <span class="comment">/* Deleted by 8278dc13 in Jan 28, 2022
+    pub async fn sys_nanosleep(&amp;self, req: UserInPtr&lt;TimeSpec&gt;) -&gt; SysResult {
+        info!(&quot;nanosleep: deadline={:?}&quot;, req);
+        let duration = req.read()?.into();
+        use kernel_hal::{thread, timer};
+        thread::sleep_until(timer::deadline_after(duration)).await;
+        Ok(0)
+    }
+    */</span>
     <span class="comment">//    pub fn sys_set_priority(&amp;self, priority: usize) -&gt; SysResult {</span>
     <span class="comment">//        let pid = thread::current().id();</span>
     <span class="comment">//        thread_manager().set_priority(pid, priority as u8);</span>
     <span class="comment">//        Ok(0)</span>
     <span class="comment">//    }</span>
 
-    <span class="doccomment">/// set pointer to thread ID</span>
-    <span class="doccomment">/// returns the caller&#39;s thread ID</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_set_tid_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tidptr</span>: <span class="ident">UserOutPtr</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SysResult</span> {
+    <span class="doccomment">/// `set_tid_address` sets the clear_child_tid value for the calling thread to `tidptr`,</span>
+    <span class="doccomment">/// and return the caller&#39;s thread ID</span>
+    <span class="doccomment">/// (see [linux man set_tid_address(2)](https://www.man7.org/linux/man-pages/man2/set_tid_address.2.html).</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sys_set_tid_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tidptr</span>: <span class="ident">UserOutPtr</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) -&gt; <span class="ident">SysResult</span> {
         <span class="macro">info!</span>(<span class="string">&quot;set_tid_address: {:?}&quot;</span>, <span class="ident">tidptr</span>);
         <span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">set_tid_address</span>(<span class="ident">tidptr</span>);
         <span class="kw">let</span> <span class="ident">tid</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">id</span>();
@@ -802,68 +948,6 @@
         <span class="kw">const</span> <span class="ident">IO</span> <span class="op">=</span>              <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">31</span>;
     }
 }
-
-<span class="kw">trait</span> <span class="ident">RegExt</span> {
-    <span class="kw">fn</span> <span class="ident">new_fn</span>(<span class="ident">entry</span>: <span class="ident">usize</span>, <span class="ident">sp</span>: <span class="ident">usize</span>, <span class="ident">arg1</span>: <span class="ident">usize</span>, <span class="ident">arg2</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
-    <span class="kw">fn</span> <span class="ident">new_clone</span>(<span class="ident">regs</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">newsp</span>: <span class="ident">usize</span>, <span class="ident">newtls</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
-    <span class="kw">fn</span> <span class="ident">new_fork</span>(<span class="ident">regs</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">RegExt</span> <span class="kw">for</span> <span class="ident">GeneralRegs</span> {
-    <span class="kw">fn</span> <span class="ident">new_fn</span>(<span class="ident">entry</span>: <span class="ident">usize</span>, <span class="ident">sp</span>: <span class="ident">usize</span>, <span class="ident">arg1</span>: <span class="ident">usize</span>, <span class="ident">arg2</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">GeneralRegs</span> {
-            <span class="ident">rip</span>: <span class="ident">entry</span>,
-            <span class="ident">rsp</span>: <span class="ident">sp</span>,
-            <span class="ident">rdi</span>: <span class="ident">arg1</span>,
-            <span class="ident">rsi</span>: <span class="ident">arg2</span>,
-            ..<span class="ident">Default::default</span>()
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">new_clone</span>(<span class="ident">regs</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">newsp</span>: <span class="ident">usize</span>, <span class="ident">newtls</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">GeneralRegs</span> {
-            <span class="ident">rax</span>: <span class="number">0</span>,
-            <span class="ident">rsp</span>: <span class="ident">newsp</span>,
-            <span class="ident">fsbase</span>: <span class="ident">newtls</span>,
-            ..<span class="kw-2">*</span><span class="ident">regs</span>
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">new_fork</span>(<span class="ident">regs</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">GeneralRegs</span> { <span class="ident">rax</span>: <span class="number">0</span>, ..<span class="kw-2">*</span><span class="ident">regs</span> }
-    }
-}
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">RegExt</span> <span class="kw">for</span> <span class="ident">GeneralRegs</span> {
-    <span class="kw">fn</span> <span class="ident">new_fn</span>(<span class="ident">entry</span>: <span class="ident">usize</span>, <span class="ident">sp</span>: <span class="ident">usize</span>, <span class="ident">arg1</span>: <span class="ident">usize</span>, <span class="ident">arg2</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="macro">info!</span>(
-            <span class="string">&quot;new_fn(), Did NOT save ip:{:#x} register! x_x Saved sp: {:#x}&quot;</span>,
-            <span class="ident">entry</span>, <span class="ident">sp</span>
-        );
-        <span class="ident">GeneralRegs</span> {
-            <span class="ident">sp</span>: <span class="ident">sp</span>,
-            <span class="ident">a0</span>: <span class="ident">arg1</span>,
-            <span class="ident">a1</span>: <span class="ident">arg2</span>,
-            ..<span class="ident">Default::default</span>()
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">new_clone</span>(<span class="ident">regs</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">newsp</span>: <span class="ident">usize</span>, <span class="ident">newtls</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">GeneralRegs</span> {
-            <span class="ident">a0</span>: <span class="number">0</span>,
-            <span class="ident">sp</span>: <span class="ident">newsp</span>,
-            <span class="ident">tp</span>: <span class="ident">newtls</span>,
-            ..<span class="kw-2">*</span><span class="ident">regs</span>
-        }
-    }
-
-    <span class="comment">//设置了返回值为0</span>
-    <span class="kw">fn</span> <span class="ident">new_fork</span>(<span class="ident">regs</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">GeneralRegs</span> { <span class="ident">a0</span>: <span class="number">0</span>, ..<span class="kw-2">*</span><span class="ident">regs</span> }
-    }
-}
-</pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="linux_syscall" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="linux_syscall" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (5e57faa78 2022-01-19)" ></div>
 </body></html>
