@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["VirtIoBlk",""],["VirtIoConsole",""],["VirtIoGpu",""],["VirtIoInput",""]]});
+initSidebarItems({"struct":[["VirtIOHeader","MMIO Device Legacy Register Interface."],["VirtIoBlk",""],["VirtIoConsole",""],["VirtIoGpu",""],["VirtIoInput",""]]});

@@ -32,6 +32,7 @@
 <span id="26">26</span>
 <span id="27">27</span>
 <span id="28">28</span>
+<span id="29">29</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Packaging of [`virtio-drivers` library](https://github.com/rcore-os/virtio-drivers).</span>
 
 <span class="kw">mod</span> <span class="ident">blk</span>;
@@ -43,6 +44,7 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">console::VirtIoConsole</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gpu::VirtIoGpu</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">input::VirtIoInput</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">virtio_drivers::VirtIOHeader</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::DeviceError</span>;
 <span class="kw">use</span> <span class="ident">core::convert::From</span>;
