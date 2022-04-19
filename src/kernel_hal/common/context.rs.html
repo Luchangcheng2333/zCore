@@ -329,6 +329,45 @@
 <span id="323">323</span>
 <span id="324">324</span>
 <span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
 </pre><pre class="rust"><code><span class="doccomment">//! User context.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">MMUFlags</span>, <span class="ident">VirtAddr</span>};
@@ -440,6 +479,45 @@
             <span class="kw">_</span> =&gt; <span class="ident"><span class="self">Self</span>::GernelFault</span>(<span class="ident">scause</span>.<span class="ident">code</span>()),
         }
     }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">trap_num</span>: <span class="ident">usize</span>, <span class="ident">_elr</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
+        <span class="comment">// TODO: check if is right</span>
+        <span class="kw">use</span> <span class="ident">cortex_a::registers</span>::{<span class="ident">ESR_EL1</span>, <span class="ident">FAR_EL1</span>};
+        <span class="kw">use</span> <span class="ident">tock_registers::interfaces::Readable</span>;
+        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::arch::trap</span>::{<span class="ident">Info</span>, <span class="ident">Source</span>, <span class="ident">Kind</span>};
+        <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">Info</span> {
+            <span class="ident">source</span>: <span class="ident">Source::from</span>(<span class="ident">trap_num</span> <span class="op">&amp;</span> <span class="number">0xffff</span>),
+            <span class="ident">kind</span>: <span class="ident">Kind::from</span>((<span class="ident">trap_num</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">16</span>) <span class="op">&amp;</span> <span class="number">0xffff</span>)
+        };
+        <span class="kw">let</span> <span class="ident">esr</span> <span class="op">=</span> <span class="ident">ESR_EL1</span>.<span class="ident">extract</span>();
+        <span class="kw">match</span> <span class="ident">info</span>.<span class="ident">kind</span> {
+            <span class="ident">Kind::Synchronous</span> =&gt; {
+                <span class="kw">match</span> <span class="ident">esr</span>.<span class="ident">read_as_enum</span>(<span class="ident">ESR_EL1::EC</span>) {
+                    <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::SVC64</span>) =&gt; {
+                        <span class="ident"><span class="self">Self</span>::Syscall</span>
+                    }
+                    <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::DataAbortLowerEL</span>)
+                    <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::DataAbortCurrentEL</span>) =&gt; {
+                        <span class="ident"><span class="self">Self</span>::PageFault</span>(<span class="ident">FAR_EL1</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="kw">_</span>, <span class="ident">MMUFlags::EXECUTE</span>)
+                    }
+                    <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::InstrAbortLowerEL</span>)
+                    <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::InstrAbortCurrentEL</span>) =&gt; {
+                        <span class="ident"><span class="self">Self</span>::UnalignedAccess</span>
+                    }
+                    <span class="kw">_</span> =&gt; {
+                        <span class="ident"><span class="self">Self</span>::GernelFault</span>(<span class="ident">esr</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">usize</span>)
+                    }
+                }
+            }
+            <span class="ident">Kind::Irq</span> =&gt; {
+                <span class="ident"><span class="self">Self</span>::Interrupt</span>(<span class="number">0</span>)
+            }
+            <span class="kw">_</span> =&gt; {
+                <span class="ident"><span class="self">Self</span>::GernelFault</span>(<span class="ident">esr</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">usize</span>)
+            }
+        }
+    }
 }
 
 <span class="doccomment">/// User context saved on trap.</span>
@@ -508,7 +586,7 @@
             <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>)]</span> {
                 <span class="ident">TrapReason::from</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">trap_num</span>, <span class="self">self</span>.<span class="number">0</span>.<span class="ident">error_code</span>)
             } <span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span> {
-                <span class="macro">unimplemented!</span>() <span class="comment">// ESR_EL1</span>
+                <span class="ident">TrapReason::from</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">trap_num</span>, <span class="self">self</span>.<span class="number">0</span>.<span class="ident">elr</span>)
             } <span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>)]</span> {
                 <span class="ident">TrapReason::from</span>(<span class="ident">riscv::register::scause::read</span>())
             } <span class="kw">else</span> {

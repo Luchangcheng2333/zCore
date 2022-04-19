@@ -954,6 +954,14 @@
 <span id="948">948</span>
 <span id="949">949</span>
 <span id="950">950</span>
+<span id="951">951</span>
+<span id="952">952</span>
+<span id="953">953</span>
+<span id="954">954</span>
+<span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
 </pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">thread_state</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::thread_state::ThreadStateKind</span>;
@@ -964,6 +972,7 @@
 <span class="kw">use</span> <span class="ident">core</span>::{<span class="ident">any::Any</span>, <span class="ident">future::Future</span>, <span class="ident">pin::Pin</span>};
 
 <span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
+<span class="kw">use</span> <span class="ident">cfg_if::cfg_if</span>;
 <span class="kw">use</span> <span class="ident">futures</span>::{<span class="ident">channel::oneshot</span>::<span class="kw-2">*</span>, <span class="ident">future::FutureExt</span>, <span class="ident">pin_mut</span>, <span class="ident">select_biased</span>};
 <span class="kw">use</span> <span class="ident">kernel_hal::context::UserContext</span>;
 <span class="kw">use</span> <span class="ident">spin::Mutex</span>;
@@ -1669,7 +1678,14 @@
 <span class="kw">impl</span> <span class="ident">Future</span> <span class="kw">for</span> <span class="ident">ThreadSwitchFuture</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> ();
     <span class="kw">fn</span> <span class="ident">poll</span>(<span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>, <span class="ident">cx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        <span class="ident">kernel_hal::vm::activate_paging</span>(<span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">proc</span>().<span class="ident">vmar</span>().<span class="ident">table_phys</span>());
+        <span class="macro">cfg_if!</span> {
+            <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span> {
+                <span class="kw">use</span> <span class="ident">kernel_hal::arch::config::USER_TABLE_FLAG</span>;
+                <span class="ident">kernel_hal::vm::activate_paging</span>(<span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">proc</span>().<span class="ident">vmar</span>().<span class="ident">table_phys</span>() <span class="op">|</span> <span class="ident">USER_TABLE_FLAG</span>);
+            } <span class="kw">else</span> {
+                <span class="ident">kernel_hal::vm::activate_paging</span>(<span class="self">self</span>.<span class="ident">thread</span>.<span class="ident">proc</span>().<span class="ident">vmar</span>().<span class="ident">table_phys</span>());
+            }
+        }
         <span class="self">self</span>.<span class="ident">future</span>.<span class="ident">lock</span>().<span class="ident">as_mut</span>().<span class="ident">poll</span>(<span class="ident">cx</span>)
     }
 }
