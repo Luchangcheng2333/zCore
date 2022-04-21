@@ -388,6 +388,8 @@
 <span id="382">382</span>
 <span id="383">383</span>
 <span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
 </pre><pre class="rust"><code><span class="doccomment">//! User context.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">MMUFlags</span>, <span class="ident">VirtAddr</span>};
@@ -596,6 +598,8 @@
                 <span class="self">self</span>.<span class="number">0</span>.<span class="ident">general</span>.<span class="ident">ra</span> <span class="op">=</span> <span class="ident">_ra</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>)]</span> {
                 <span class="macro">error!</span>(<span class="string">&quot;Please set return addr via stack!&quot;</span>);
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span> {
+                <span class="self">self</span>.<span class="number">0</span>.<span class="ident">general</span>.<span class="ident">x30</span> <span class="op">=</span> <span class="ident">_ra</span>;
             } <span class="kw">else</span> {
                 <span class="macro">unimplemented!</span>(<span class="string">&quot;Unsupported arch!&quot;</span>);
             }
