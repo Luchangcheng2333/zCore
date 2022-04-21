@@ -370,9 +370,6 @@
 <span id="364">364</span>
 <span id="365">365</span>
 <span id="366">366</span>
-<span id="367">367</span>
-<span id="368">368</span>
-<span id="369">369</span>
 </pre><pre class="rust"><code><span class="doccomment">//! User context.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">MMUFlags</span>, <span class="ident">VirtAddr</span>};
@@ -491,7 +488,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">trap_num</span>: <span class="ident">usize</span>, <span class="ident">_elr</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
         <span class="comment">// TODO: check if is right</span>
-        <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Info</span>, <span class="ident">Kind</span>, <span class="ident">Source</span>};
+        <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Info</span>, <span class="ident">Kind</span>, <span class="ident">Source</span>, <span class="ident">Syndrome</span>};
         <span class="kw">use</span> <span class="ident">cortex_a::registers</span>::{<span class="ident">ESR_EL1</span>, <span class="ident">FAR_EL1</span>};
         <span class="kw">use</span> <span class="ident">tock_registers::interfaces::Readable</span>;
 
@@ -499,19 +496,16 @@
             <span class="ident">source</span>: <span class="ident">Source::from</span>(<span class="ident">trap_num</span> <span class="op">&amp;</span> <span class="number">0xffff</span>),
             <span class="ident">kind</span>: <span class="ident">Kind::from</span>((<span class="ident">trap_num</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">16</span>) <span class="op">&amp;</span> <span class="number">0xffff</span>),
         };
-        <span class="kw">let</span> <span class="ident">esr</span> <span class="op">=</span> <span class="ident">ESR_EL1</span>.<span class="ident">extract</span>();
+        <span class="kw">let</span> <span class="ident">esr</span> <span class="op">=</span> <span class="ident">ESR_EL1</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">u32</span>;
         <span class="kw">match</span> <span class="ident">info</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind::Synchronous</span> =&gt; <span class="kw">match</span> <span class="ident">esr</span>.<span class="ident">read_as_enum</span>(<span class="ident">ESR_EL1::EC</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::BreakpointLowerEL</span>)
-                <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::BreakpointCurrentEL</span>) =&gt; <span class="ident"><span class="self">Self</span>::SoftwareBreakpoint</span>,
-                <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::SVC64</span>) =&gt; <span class="ident"><span class="self">Self</span>::Syscall</span>,
-                <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::DataAbortLowerEL</span>)
-                <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::DataAbortCurrentEL</span>) =&gt; {
-                    <span class="ident"><span class="self">Self</span>::PageFault</span>(<span class="ident">FAR_EL1</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="kw">_</span>, <span class="ident">MMUFlags::EXECUTE</span>)
+            <span class="ident">Kind::Synchronous</span> =&gt; <span class="kw">match</span> <span class="ident">Syndrome::from</span>(<span class="ident">esr</span>) {
+                <span class="ident">Syndrome::Breakpoint</span> =&gt; <span class="ident"><span class="self">Self</span>::SoftwareBreakpoint</span>,
+                <span class="ident">Syndrome::Svc</span>(<span class="kw">_</span>) =&gt; <span class="ident"><span class="self">Self</span>::Syscall</span>,
+                <span class="ident">Syndrome::DataAbort</span> { <span class="ident">kind</span>: <span class="kw">_</span>, <span class="ident">level</span>: <span class="kw">_</span> } =&gt; {
+                    <span class="ident"><span class="self">Self</span>::PageFault</span>(<span class="ident">FAR_EL1</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="kw">_</span>, <span class="ident">MMUFlags::WRITE</span> <span class="op">|</span> <span class="ident">MMUFlags::USER</span>)
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::InstrAbortLowerEL</span>)
-                <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">ESR_EL1::EC::Value::InstrAbortCurrentEL</span>) =&gt; <span class="ident"><span class="self">Self</span>::UnalignedAccess</span>,
-                <span class="kw">_</span> =&gt; <span class="ident"><span class="self">Self</span>::GernelFault</span>(<span class="ident">esr</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">usize</span>),
+                <span class="ident">Syndrome::PCAlignmentFault</span> <span class="op">|</span> <span class="ident">Syndrome::SpAlignmentFault</span> =&gt; <span class="ident"><span class="self">Self</span>::UnalignedAccess</span>,
+                <span class="kw">_</span> =&gt; <span class="ident"><span class="self">Self</span>::GernelFault</span>(<span class="ident">esr</span> <span class="kw">as</span> <span class="ident">usize</span>),
             },
             <span class="ident">Kind::Irq</span> =&gt; <span class="ident"><span class="self">Self</span>::Interrupt</span>(
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libos&quot;</span>))]</span>
@@ -525,7 +519,7 @@
                     <span class="ident">usize::MAX</span>
                 },
             ),
-            <span class="kw">_</span> =&gt; <span class="ident"><span class="self">Self</span>::GernelFault</span>(<span class="ident">esr</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">usize</span>),
+            <span class="kw">_</span> =&gt; <span class="ident"><span class="self">Self</span>::GernelFault</span>(<span class="ident">esr</span> <span class="kw">as</span> <span class="ident">usize</span>),
         }
     }
 }
