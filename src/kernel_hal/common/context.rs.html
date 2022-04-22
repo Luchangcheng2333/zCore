@@ -530,8 +530,8 @@
             <span class="ident">Kind::Irq</span> =&gt; <span class="ident"><span class="self">Self</span>::Interrupt</span>(
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libos&quot;</span>))]</span>
                 {
-                    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::arch::gic::get_irq_num</span>;
-                    <span class="ident">get_irq_num</span>()
+                    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::imp::config::GIC_BASE</span>;
+                    <span class="ident">zcore_drivers::irq::armv8_gic::get_irq_num</span>(<span class="ident">GIC_BASE</span>)
                 },
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libos&quot;</span>)]</span>
                 {

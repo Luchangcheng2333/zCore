@@ -203,12 +203,6 @@
 <span id="197">197</span>
 <span id="198">198</span>
 <span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
 <span class="kw">use</span> <span class="ident">numeric_enum_macro::numeric_enum</span>;
 
@@ -248,12 +242,6 @@
 
 <span class="macro">cfg_if!</span> {
     <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span> {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-        <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">IrqHandlerResult</span> {
-            <span class="ident">Reschedule</span>,
-            <span class="ident">NoReschedule</span>,
-        }
-
         <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
         <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Kind</span> {
             <span class="ident">Synchronous</span> <span class="op">=</span> <span class="number">0</span>,

@@ -27,6 +27,8 @@
 <span id="21">21</span>
 <span id="22">22</span>
 <span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
 </pre><pre class="rust"><code><span class="doccomment">//! External interrupt request and handle.</span>
 
 <span class="macro">cfg_if::cfg_if!</span> {
@@ -48,6 +50,8 @@
         <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">x86</span> {
             <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::x86_apic::Apic</span>;
         }
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span> {
+        <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">armv8_gic</span>;
     }
 }
 </code></pre></div>
