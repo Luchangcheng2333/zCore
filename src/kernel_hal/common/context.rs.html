@@ -391,6 +391,9 @@
 <span id="385">385</span>
 <span id="386">386</span>
 <span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
 </pre><pre class="rust"><code><span class="doccomment">//! User context.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">MMUFlags</span>, <span class="ident">VirtAddr</span>};
@@ -531,9 +534,12 @@
             <span class="ident">Kind::Irq</span> =&gt; <span class="ident"><span class="self">Self</span>::Interrupt</span>(
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libos&quot;</span>))]</span>
                 {
-                    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::imp::config</span>::<span class="kw-2">*</span>;
                     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::hal_fn::mem::phys_to_virt</span>;
-                    <span class="ident">zcore_drivers::irq::gic_400::get_irq_num</span>(<span class="ident">phys_to_virt</span>(<span class="ident">GICC_BASE</span>), <span class="ident">phys_to_virt</span>(<span class="ident">GICD_BASE</span>))
+                    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::imp::config</span>::<span class="kw-2">*</span>;
+                    <span class="ident">zcore_drivers::irq::gic_400::get_irq_num</span>(
+                        <span class="ident">phys_to_virt</span>(<span class="ident">GICC_BASE</span>),
+                        <span class="ident">phys_to_virt</span>(<span class="ident">GICD_BASE</span>),
+                    )
                 },
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libos&quot;</span>)]</span>
                 {
