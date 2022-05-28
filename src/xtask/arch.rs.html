@@ -281,6 +281,13 @@
 <span id="275">275</span>
 <span id="276">276</span>
 <span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
 </pre><pre class="rust"><code><span class="doccomment">//! 平台相关的操作。</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
@@ -329,7 +336,7 @@
         <span class="comment">// 拷贝 libc.so</span>
         <span class="kw">let</span> <span class="ident">libc_so</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;lib/ld-musl-{arch}.so.1&quot;</span>, <span class="ident">arch</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">arch</span>.<span class="ident">as_str</span>());
         <span class="kw">let</span> <span class="ident">so</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">arch</span> {
-            <span class="ident">Arch::Riscv64</span> =&gt; <span class="ident">src</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">libc_so</span>),
+            <span class="ident">Arch::Riscv64</span> <span class="op">|</span> <span class="ident">Arch::Aarch64</span> =&gt; <span class="ident">src</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">libc_so</span>),
             <span class="ident">Arch::X86_64</span> =&gt; <span class="ident">libos_libc_so</span>(),
         };
         <span class="ident">fs::copy</span>(<span class="ident">so</span>, <span class="ident">dir</span>.<span class="ident">join</span>(<span class="ident">libc_so</span>)).<span class="ident">unwrap</span>();
@@ -379,6 +386,9 @@
                     .<span class="ident">unwrap</span>();
                 <span class="ident">Make::new</span>(<span class="prelude-val">None</span>).<span class="ident">current_dir</span>(<span class="ident">dir</span>).<span class="ident">invoke</span>();
             }
+            <span class="ident">Arch::Aarch64</span> =&gt; {
+                <span class="macro">todo!</span>(<span class="string">&quot;libc-test in aarch64 is not available&quot;</span>);
+            }
         }
     }
 
@@ -408,6 +418,9 @@
                             .<span class="ident">invoke</span>();
                     });
             }
+            <span class="ident">Arch::Aarch64</span> =&gt; {
+                <span class="macro">todo!</span>(<span class="string">&quot;other test in aarch64 is not supported&quot;</span>);
+            }
         }
     }
 
@@ -417,7 +430,7 @@
         <span class="self">self</span>.<span class="ident">make_rootfs</span>(<span class="bool-val">false</span>);
         <span class="kw">let</span> <span class="ident">arch_str</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">arch</span>.<span class="ident">as_str</span>();
         <span class="kw">let</span> <span class="ident">image</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">arch</span> {
-            <span class="ident">Arch::Riscv64</span> =&gt; {
+            <span class="ident">Arch::Riscv64</span> <span class="op">|</span> <span class="ident">Arch::Aarch64</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">rootfs</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;rootfs/{arch_str}&quot;</span>);
                 <span class="kw">let</span> <span class="ident">image</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;zCore/{arch_str}.img&quot;</span>);
                 <span class="ident">fuse</span>(<span class="ident">rootfs</span>, <span class="kw-2">&amp;</span><span class="ident">image</span>);
@@ -478,7 +491,7 @@
         <span class="comment">// 构造压缩文件路径</span>
         <span class="kw">let</span> <span class="ident">file_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">arch</span> {
             <span class="ident">Arch::Riscv64</span> =&gt; <span class="string">&quot;minirootfs.tar.xz&quot;</span>,
-            <span class="ident">Arch::X86_64</span> =&gt; <span class="string">&quot;minirootfs.tar.gz&quot;</span>,
+            <span class="ident">Arch::X86_64</span> <span class="op">|</span> <span class="ident">Arch::Aarch64</span> =&gt; <span class="string">&quot;minirootfs.tar.gz&quot;</span>,
         };
         <span class="kw">let</span> <span class="ident">tar</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">origin</span>().<span class="ident">join</span>(<span class="ident">file_name</span>);
         <span class="comment">// 若压缩文件不存在，需要下载</span>
@@ -486,6 +499,7 @@
             <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">arch</span> {
                 <span class="ident">Arch::Riscv64</span> =&gt; <span class="ident">String::from</span>(<span class="string">&quot;https://github.com/rcore-os/libc-test-prebuilt/releases/download/0.1/prebuild.tar.xz&quot;</span>),
                 <span class="ident">Arch::X86_64</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ALPINE_WEBSITE}/x86_64/alpine-minirootfs-{ALPINE_ROOTFS_VERSION}-x86_64.tar.gz&quot;</span>),
+                <span class="ident">Arch::Aarch64</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ALPINE_WEBSITE}/aarch64/alpine-minirootfs-{ALPINE_ROOTFS_VERSION}-aarch64.tar.gz&quot;</span>)
             };
             <span class="ident">wget</span>(<span class="ident">url</span>, <span class="kw-2">&amp;</span><span class="ident">tar</span>);
         }
@@ -495,7 +509,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tar</span> <span class="op">=</span> <span class="ident">Tar::xf</span>(<span class="kw-2">&amp;</span><span class="ident">tar</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">dir</span>));
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">arch</span> {
             <span class="ident">Arch::Riscv64</span> =&gt; <span class="ident">tar</span>.<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;--strip-components&quot;</span>, <span class="string">&quot;1&quot;</span>]).<span class="ident">invoke</span>(),
-            <span class="ident">Arch::X86_64</span> =&gt; <span class="ident">tar</span>.<span class="ident">invoke</span>(),
+            <span class="ident">Arch::X86_64</span> <span class="op">|</span> <span class="ident">Arch::Aarch64</span> =&gt; <span class="ident">tar</span>.<span class="ident">invoke</span>(),
         }
         <span class="ident">dir</span>
     }
