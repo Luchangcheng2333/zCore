@@ -315,6 +315,7 @@
 <span id="309">309</span>
 <span id="310">310</span>
 <span id="311">311</span>
+<span id="312">312</span>
 </pre><pre class="rust"><code><span class="doccomment">//! 平台相关的操作。</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
@@ -342,7 +343,9 @@
         <span class="ident">arch</span>: <span class="ident">Arch::Riscv64</span>,
     };
     <span class="kw">const</span> <span class="ident">X86_64</span>: <span class="self">Self</span> <span class="op">=</span> <span class="self">Self</span> { <span class="ident">arch</span>: <span class="ident">Arch::X86_64</span> };
-    <span class="kw">const</span> <span class="ident">AARCH64</span>: <span class="self">Self</span> <span class="op">=</span> <span class="self">Self</span> { <span class="ident">arch</span>: <span class="ident">Arch::Aarch64</span> };
+    <span class="kw">const</span> <span class="ident">AARCH64</span>: <span class="self">Self</span> <span class="op">=</span> <span class="self">Self</span> {
+        <span class="ident">arch</span>: <span class="ident">Arch::Aarch64</span>,
+    };
 
     <span class="doccomment">/// 构造启动内存文件系统 rootfs。</span>
     <span class="doccomment">/// 对于 x86_64，这个文件系统可用于 libos 启动。</span>
@@ -423,10 +426,9 @@
                     .<span class="ident">invoke</span>();
                 <span class="ident">fs::copy</span>(
                     <span class="ident">dir</span>.<span class="ident">join</span>(<span class="string">&quot;src/functional/*.exe&quot;</span>),
-                    <span class="self">self</span>.<span class="ident">target</span>()
-                        .<span class="ident">join</span>(<span class="string">&quot;rootfs/libc-test/src/functional&quot;</span>)
+                    <span class="self">self</span>.<span class="ident">target</span>().<span class="ident">join</span>(<span class="string">&quot;rootfs/libc-test/src/functional&quot;</span>),
                 )
-                    .<span class="ident">unwrap</span>();
+                .<span class="ident">unwrap</span>();
             }
         }
     }
