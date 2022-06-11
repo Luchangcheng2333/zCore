@@ -169,6 +169,10 @@
 <span id="163">163</span>
 <span id="164">164</span>
 <span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">command</span>::{<span class="ident">dir</span>, <span class="ident">download::wget</span>, <span class="ident">CommandExt</span>, <span class="ident">Tar</span>},
     <span class="ident">Arch</span>, <span class="ident">ALPINE_ROOTFS_VERSION</span>, <span class="ident">ALPINE_WEBSITE</span>,
@@ -276,7 +280,11 @@
                 <span class="ident">aarch64_tar</span>.<span class="ident">invoke</span>();
                 <span class="kw">let</span> <span class="ident">boot_dir</span> <span class="op">=</span> <span class="string">&quot;zCore/disk/EFI/Boot/&quot;</span>;
                 <span class="ident">fs::create_dir_all</span>(<span class="ident">boot_dir</span>).<span class="ident">ok</span>();
-                <span class="ident">fs::copy</span>(<span class="ident">fw_dir</span>.<span class="ident">join</span>(<span class="string">&quot;aarch64_uefi.efi&quot;</span>), <span class="string">&quot;zCore/disk/EFI/Boot/bootaa64.efi&quot;</span>).<span class="ident">unwrap</span>();
+                <span class="ident">fs::copy</span>(
+                    <span class="ident">fw_dir</span>.<span class="ident">join</span>(<span class="string">&quot;aarch64_uefi.efi&quot;</span>),
+                    <span class="string">&quot;zCore/disk/EFI/Boot/bootaa64.efi&quot;</span>,
+                )
+                .<span class="ident">unwrap</span>();
                 <span class="ident">fs::copy</span>(<span class="ident">fw_dir</span>.<span class="ident">join</span>(<span class="string">&quot;Boot.json&quot;</span>), <span class="string">&quot;zCore/disk/EFI/Boot/Boot.json&quot;</span>).<span class="ident">ok</span>();
             }
             <span class="kw">_</span> =&gt; {}
