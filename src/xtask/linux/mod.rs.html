@@ -275,7 +275,7 @@
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">aarch64_tar</span> <span class="op">=</span> <span class="ident">Tar::xf</span>(<span class="kw-2">&amp;</span><span class="ident">aarch64_tar</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">fw_dir</span>));
                 <span class="ident">aarch64_tar</span>.<span class="ident">invoke</span>();
                 <span class="kw">let</span> <span class="ident">boot_dir</span> <span class="op">=</span> <span class="string">&quot;zCore/disk/EFI/Boot&quot;</span>;
-                <span class="ident">fs::create_dir_all</span>(<span class="ident">boot_dir</span>)<span class="question-mark">?</span>;
+                <span class="ident">fs::create_dir_all</span>(<span class="ident">boot_dir</span>).<span class="ident">ok</span>();
                 <span class="ident">fs::copy</span>(<span class="ident">fw_dir</span>.<span class="ident">join</span>(<span class="string">&quot;aarch64_uefi.efi&quot;</span>), <span class="ident">boot_dir</span>);
                 <span class="ident">fs::copy</span>(<span class="ident">fw_dir</span>.<span class="ident">join</span>(<span class="string">&quot;Boot.json&quot;</span>), <span class="ident">boot_dir</span>);
             }
