@@ -123,14 +123,12 @@
 <span id="117">117</span>
 <span id="118">118</span>
 <span id="119">119</span>
-<span id="120">120</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">join_path_env</span>, <span class="ident">linux_musl_cross</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">command</span>::{<span class="ident">download::fetch_online</span>, <span class="ident">CommandExt</span>, <span class="ident">Ext</span>, <span class="ident">Git</span>, <span class="ident">Make</span>},
     <span class="ident">Arch</span>, <span class="ident">ORIGIN</span>,
 };
 <span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">ffi::OsStr</span>,
     <span class="ident">fs</span>,
     <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
 };
