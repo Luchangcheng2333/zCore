@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["UdpInner","UDP socket inner"],["UdpSocketState","UDP socket structure"]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["rustsbi_qemu","下载 rustsbi。"]],"struct":[["AsmArgs",""],["BuildArgs",""],["GdbArgs",""],["INNER",""],["QemuArgs",""]]});
+window.SIDEBAR_ITEMS = {"static":[["INNER",""]],"struct":[["BuildArgs",""],["BuildConfig",""],["GdbArgs",""],["OutArgs",""],["QemuArgs",""]]};
